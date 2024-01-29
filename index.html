@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Weather app</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="card">
+        <div class="search">
+            <input type="text" placeholder="Enter city name" spellcheck="false">
+            <button><img src="images/search.png" ></button>
+        </div>
+   
+    <div class="weather">
+        <img src="images/rain.png" class="weather-icon">
+        <h1 class="tenp">22°c</h1>
+        <h2 class="city">Bangalore</h2>
+        <div class="details">
+            <div class="col1">
+                <img src="images/humidity.png">
+            </div>
+            <p class="humidity">50%<br>
+            Humidity</p>
+
+
+            <div class="col1">
+                <img src="images/wind.png" class="win">
+            </div>
+            <p class="wind">15 km/h<br>
+            Wind speed</p>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+const weatherImageMapping = {
+            'Clear': 'clear.png',
+            'Clouds': 'clouds.png',
+            'Rain': 'rain.png',
+            'Drizzle': 'drizzle.png',
+            'Mist':'mist.png',
+            'Snow':'snow.png'
+
+
+
+            // Add more mappings for other weather conditions
+        };
+  document.addEventListener('DOMContentLoaded', () => {
+      const apiKey = '971dce2d981dedbaca5925b0db4c3403';
+      const searchInput = document.querySelector('.search input');
+      const searchBtn = document.querySelector('.search button');
+      
+      // Attach event listener to the button
+      searchBtn.addEventListener('click', () => {
+          // Clear previous weather information
+          clearWeatherInfo();
+
+          // Get the city from the input field when the button is clicked
+          const city = searchInput.value;
+
+          // Construct the API URL with the city name
+          const apiUrl = `https://api.openweathermap.org/data/2.5/weather?units=metric&q=${city}&appid=${apiKey}`;
+
+          // Fetch weather data
+          fetch(apiUrl)
+              .then(response => response.json())
+              .then(data => {
+                  // Update HTML elements with weather data
+                  updateWeatherInfo(data);
+              })
+              
+      });
+
+      function clearWeatherInfo() {
+          // Clear previous weather information
+          document.querySelector('.city').textContent = '';
+          document.querySelector('.tenp').textContent = '';
+          document.querySelector('.humidity').textContent = '';
+          document.querySelector('.wind').textContent = '';
+      }
+
+    function updateWeatherInfo(weatherData) {
+    const cityElement = document.querySelector('.city');
+    const tempElement = document.querySelector('.tenp');
+    const humidityElement = document.querySelector('.humidity');
+    const windspeedElement = document.querySelector('.wind');
+
+    // Check if the 'cod' property exists in the weatherData object
+    if (weatherData && weatherData.cod) {
+        // Check if the 'cod' property indicates an error (e.g., '404' for city not found)
+        if (weatherData.cod === '404') {
+            // Display an error message for the user
+            cityElement.textContent = 'City not found';
+            tempElement.textContent = '';
+            humidityElement.textContent = '';
+            windspeedElement.textContent = '';
+            console.error('City not found:', weatherData.message);
+        } else {
+            // Extract relevant data from the JSON response
+            const cityName = weatherData.name;
+            const temperature = Math.round(weatherData.main.temp);
+            const humidity = weatherData.main.humidity;
+            const windspeed = weatherData.wind ? weatherData.wind.speed : 'N/A';
+
+            // Update HTML elements with the extracted data
+            cityElement.textContent = `${cityName}`;
+            tempElement.textContent = `${temperature} °C`;
+            humidityElement.textContent = ` Humidity ${humidity}%`;
+            windspeedElement.textContent = `Wind speed ${windspeed} km/hr`;
+
+            // Update weather icon based on weather conditions
+            updateWeatherIcon(weatherData.weather[0].icon);
+        }
+    } else {
+        console.error('Invalid weather data:', weatherData);
+    }
+
+}
+function updateWeatherIcon(weatherCondition) {
+    const weatherIconElement = document.querySelector('.weather-icon');
+    // Replace 'your-image-base-url' with the actual base URL for your weather icons
+    const baseUrl = '/images/';
+
+    // Check if the weather condition has a corresponding image filename
+    if (weatherImageMapping.hasOwnProperty(weatherCondition)) {
+        // Combine the base URL with the appropriate image filename
+        const imageUrl = `${baseUrl}${weatherImageMapping[weatherCondition]}`;
+
+        // Log values for debugging
+        console.log('Weather Condition:', weatherCondition);
+        console.log('Image URL:', imageUrl);
+
+        // Set the image source
+        weatherIconElement.src = imageUrl;
+    } else {
+        // Handle the case where there is no corresponding image filename
+        console.error(`Image not found for weather condition: ${weatherCondition}`);
+    }
+}
+
+  });
+</script>
+
+</body>
+
+</html>
